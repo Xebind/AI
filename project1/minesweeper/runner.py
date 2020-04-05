@@ -141,6 +141,17 @@ while True:
     pygame.draw.rect(screen, WHITE, aiButton)
     screen.blit(buttonText, buttonRect)
 
+    # AI Game button
+    aiGButton = pygame.Rect(
+        (2 / 3) * width + BOARD_PADDING, (1 / 3) * height - 120,
+        (width / 3) - BOARD_PADDING * 2, 50
+    )
+    buttonText = mediumFont.render("AI Game", True, BLACK)
+    buttonRect = buttonText.get_rect()
+    buttonRect.center = aiGButton.center
+    pygame.draw.rect(screen, WHITE, aiGButton)
+    screen.blit(buttonText, buttonRect)
+
     # Reset button
     resetButton = pygame.Rect(
         (2 / 3) * width + BOARD_PADDING, (1 / 3) * height + 20,
@@ -191,6 +202,62 @@ while True:
             else:
                 print("AI making safe move.")
             time.sleep(0.2)
+
+        # If AI Game button clicked, make an AI game
+        elif aiGButton.collidepoint(mouse) and not lost:
+            while game.mines != flags and not lost:
+                move = ai.make_safe_move()
+                if move is None:
+                    move = ai.make_random_move()
+                    if move is None:
+                        print("No moves left to make.")
+                    else:
+                        print("No known safe moves, AI making random move.")
+                else:
+                    print("AI making safe move.")
+
+                if move:
+                    if game.is_mine(move):
+                        lost = True
+                    else:
+                        nearby = game.nearby_mines(move)
+                        revealed.add(move)
+                        ai.add_knowledge(move, nearby)
+                        #time.sleep(0.1)
+                        flags = ai.mines.copy()
+                        pygame.display.flip()
+                        # Draw board
+                        cells = []
+                        for i in range(HEIGHT):
+                            row = []
+                            for j in range(WIDTH):
+
+                                # Draw rectangle for cell
+                                rect = pygame.Rect(
+                                    board_origin[0] + j * cell_size,
+                                    board_origin[1] + i * cell_size,
+                                    cell_size, cell_size
+                                )
+                                pygame.draw.rect(screen, GRAY, rect)
+                                pygame.draw.rect(screen, WHITE, rect, 3)
+
+                                # Add a mine, flag, or number if needed
+                                if game.is_mine((i, j)) and lost:
+                                    screen.blit(mine, rect)
+                                elif (i, j) in flags:
+                                    screen.blit(flag, rect)
+                                elif (i, j) in revealed:
+                                    neighbors = smallFont.render(
+                                        str(game.nearby_mines((i, j))),
+                                        True, BLACK
+                                    )
+                                    neighborsTextRect = neighbors.get_rect()
+                                    neighborsTextRect.center = rect.center
+                                    screen.blit(neighbors, neighborsTextRect)
+
+                                row.append(rect)
+                            cells.append(row)
+
 
         # Reset game state
         elif resetButton.collidepoint(mouse):

@@ -142,6 +142,9 @@ class Sentence():
         if cell in self.cells and len(self.cells) > 1:
             self.cells.remove(cell)
 
+
+
+
 class MinesweeperAI():
     """
     Minesweeper game player
@@ -181,6 +184,7 @@ class MinesweeperAI():
         for sentence in self.knowledge:
             sentence.mark_safe(cell)
 
+
     def add_knowledge(self, cell, count):
         """
         Called when the Minesweeper board tells us, for a given
@@ -200,11 +204,16 @@ class MinesweeperAI():
         self.mark_safe(cell)
 
         newsentence = Sentence("", 0)
+        newsentence.cells.add(cell)
+        newsentence.count = 0
+        self.knowledge.append(newsentence)
+
+        newsentence = Sentence("", 0)
         for i in range(cell[0] - 1, cell[0] + 2):
             for j in range(cell[1] - 1, cell[1] + 2):
 
-                # Ignore the cell itself
-                if (i, j) == cell or i < 0 or j < 0 or i > 7 or j > 7 :
+                # Ignore the cell itself and out of board cells
+                if (i, j) == cell or i < 0 or j < 0 or i > self.height - 1 or j > self.width -1:
                     continue
 
                 newsentence.cells.add((i,j))
@@ -235,7 +244,7 @@ class MinesweeperAI():
                 for i in Inferences:
                     if i not in self.knowledge:
                         self.knowledge.append(i)
-            print(f"Known mines are in positions:{self.mines}")
+        #print(f"Known mines are in positions:{self.mines}")
             #for sentence in self.knowledge:
                 #print(f"{sentence}")
 
